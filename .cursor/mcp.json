@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "pairimprover": {
+      "command": "node",
+      "args": ["/Users/acunguersoy/DEV/pairimprover-mcp/dist/index.js"]
+    }
+  }
+}
