@@ -2,7 +2,10 @@
   "mcpServers": {
     "pairimprover": {
       "command": "node",
-      "args": ["/Users/acunguersoy/DEV/pairimprover-mcp/dist/index.js"]
+      "args": ["/Users/acunguersoy/DEV/pairimprover-mcp/dist/index.js"],
+      "env": {
+        "PAIRIMPROVER_API_URL": "http://localhost:3000"
+      }
     }
   }
 }
