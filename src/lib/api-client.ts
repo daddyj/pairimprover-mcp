@@ -6,16 +6,11 @@
 const baseUrl =
   process.env.PAIRIMPROVER_API_URL ?? "https://www.pairimprover.com";
 const checkEndpoint = `${baseUrl}/api/check`;
-
-export interface CheckNudge {
-  pillar: string;
-  message: string;
-  severity: "gentle" | "important";
-}
+const verifyEndpoint = `${baseUrl}/api/auth/verify`;
 
 export interface CheckResponse {
   success: boolean;
-  nudges: CheckNudge[];
+  nudges: string[];
   error?: string;
   authRequired?: boolean;
 }
@@ -71,4 +66,48 @@ export async function checkSessionQuality(
   }
 
   return data;
+}
+
+export interface VerifyResponse {
+  user: {
+    id: string;
+    github_username: string;
+    tier: string;
+    analyses_count: number;
+    monthly_limit: number | null;
+  };
+}
+
+export async function verifyToken(token: string): Promise<VerifyResponse> {
+  let response: Response;
+  try {
+    response = await fetch(verifyEndpoint, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    throw new Error(`Network error calling ${verifyEndpoint}: ${msg}`);
+  }
+
+  const rawBody = await response.text();
+  const data = (() => {
+    try {
+      return JSON.parse(rawBody);
+    } catch {
+      throw new Error(
+        `Invalid JSON from ${verifyEndpoint} (${response.status}): ${rawBody.slice(0, 200)}`,
+      );
+    }
+  })();
+
+  if (!response.ok) {
+    throw new Error(
+      data.error ?? `Token verification failed (${response.status})`,
+    );
+  }
+
+  return data as VerifyResponse;
 }
