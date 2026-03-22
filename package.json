@@ -1,6 +1,6 @@
 {
   "name": "pairimprover-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server for in-chat AI coding quality nudges - pAIrImprover",
   "license": "ISC",
   "author": "Acun Guersoy",
@@ -13,7 +13,8 @@
   "files": [
     "dist",
     "bin",
-    "skills"
+    "skills",
+    "rules"
   ],
   "scripts": {
     "build": "tsc",

@@ -6,7 +6,7 @@ import { checkSessionQuality, verifyToken } from "./lib/api-client.js";
 
 const server = new McpServer({
   name: "pairimprover",
-  version: "0.2.0",
+  version: "0.2.1",
 });
 
 server.registerTool(
@@ -23,7 +23,7 @@ server.registerTool(
           type: "text",
           text: token
             ? "pAIrImprover MCP server is running. Authenticated."
-            : "pAIrImprover MCP server is running. Not authenticated - run login first.",
+            : "pAIrImprover MCP server is running. Not authenticated. In a terminal run: npx -y pairimprover-cli login --github (keeps tokens out of AI chat). Then start a new chat or ask to run health again.",
         },
       ],
     };
@@ -34,11 +34,11 @@ server.registerTool(
   "login",
   {
     description:
-      "Authenticate with pAIrImprover using a token from pairimprover.com/setup",
+      "Optional fallback: save auth token to local config. Prefer npx -y pairimprover-cli login --github in a terminal so JWTs are not pasted into chat.",
     inputSchema: {
       token: z
         .string()
-        .describe("The authentication token"),
+        .describe("JWT from pairimprover.com/setup — avoid when possible; chat logs may retain it"),
     },
   },
   async ({ token }) => {
@@ -69,7 +69,7 @@ server.registerTool(
         content: [
           {
             type: "text",
-            text: `Login failed: ${message}. Go to pairimprover.com/setup, sign in with GitHub, and copy your token.`,
+            text: `Login failed: ${message}. Prefer: npx -y pairimprover-cli login --github in a terminal. Fallback: pairimprover.com/setup for a token (paste via login tool only if you accept chat retention risk).`,
           },
         ],
       };
@@ -95,7 +95,7 @@ server.registerTool(
         content: [
           {
             type: "text",
-            text: "Not authenticated. Ask the developer to go to pairimprover.com/setup, sign in, and paste their token.",
+            text: "Not authenticated. Ask the developer to run in a terminal: npx -y pairimprover-cli login --github (recommended). Or pairimprover.com/setup + MCP login tool only as fallback.",
           },
         ],
       };

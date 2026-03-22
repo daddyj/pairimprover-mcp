@@ -1,9 +1,6 @@
 ---
-name: pairimprover
-description: >-
-  On new chats, runs pAIrImprover health once (local), then prompts terminal login
-  (npx pairimprover-cli) when needed. Session quality via check_session_quality when
-  signals appear (including implicit feature handoffs). Embeds returned suggestions naturally.
+description: pAIrImprover – health on new chat, terminal login (npx CLI), session quality checks via MCP
+alwaysApply: true
 ---
 
 # pAIrImprover - Session Quality Nudges
@@ -21,15 +18,18 @@ On your **first reply** in a **new chat** (not on follow-ups in the same thread)
 3. **If not authenticated**:
    - Answer the user’s question as usual.
    - Add a **short** setup note (1–3 sentences): in-chat checks need a one-time sign-in. **Do not ask them to paste a JWT into this chat** (tokens can be logged in chat history). Tell them to open a **terminal** and run:
+
      `npx -y pairimprover-cli login --github`
+
      That opens GitHub, then writes credentials to the same config the MCP server uses. After it succeeds, they can **start a new chat** or ask you to run **`health`** again.
+
    - **Do not** use the line “quality checks active” until **`health`** shows authenticated.
 
 If pAIrImprover MCP tools are **not available** (no `health` tool), skip all of the above for this chat.
 
 ## After terminal login (same thread)
 
-If the user says they finished **`npx -y pairimprover-cli login --github`** (or similar), call **`health`** again to confirm, then acknowledge.
+If the user says they finished **`npx -y pairimprover-cli login --github`** (or similar), call **`health`** again to confirm, then acknowledge. This overrides the “first reply only” restriction for **`health`** in this case.
 
 ## When to Check
 
@@ -42,7 +42,7 @@ Phrases like: looks good, perfect, yes, let’s continue, ok, okay, great, nice,
 ### B. Feature handoff without review (high priority)
 
 - Your **last reply** (or last two) included **substantial implementation**: new/updated screens, multiple files, tests, or a long “here’s what changed” summary.
-- The user’s **next message** starts a **new** task or topic (**next**, **next task**, **next topic**, **what’s next**, **now do X**, etc.) **without** asking about edge cases, tests, errors, trade-offs, or reviewing what was just shipped.
+- The user’s **next message** starts a **new** task or topic (**next**, **next task**, **next topic**, **what’s next**, **now do X**, **create an account page**, etc.) **without** asking about edge cases, tests, errors, trade-offs, or reviewing what was just shipped.
 
 Treat that as **blind handoff**: call `check_session_quality` **before or while** answering the new request (summarize the handoff in `conversationContext`).
 
@@ -78,7 +78,7 @@ When calling `check_session_quality`, pass a `conversationContext` string that i
 
 1. **The specific last action**: what was implemented and what the user did next
 2. **Framework/language**
-3. **The behavioral signal**: e.g. “User moved to next feature without reviewing auth API change + tests.”
+3. **The behavioral signal**: e.g. “User moved to next feature without reviewing DummyJSON auth swap + tests; no discussion of edge cases.”
 
 Good example:
 
@@ -100,5 +100,6 @@ If nothing is returned, continue normally. Do not mention the check.
 
 ## Authentication
 
-- **Preferred:** Terminal — `npx -y pairimprover-cli login --github` (tokens stay out of AI chat).
-- **Fallback:** If the developer pastes a token, call **`login`**; warn about chat logs and rotation if shared.
+- **Preferred:** Terminal — `npx -y pairimprover-cli login --github` (tokens stay out of AI chat). Same config file as MCP (`~/.pairimprover/config.json`).
+- **Fallback (avoid when possible):** If the developer **pastes a token** in chat, you may call **`login`** with it. Remind them that chat logs may retain secrets and they should rotate the token if the thread is shared.
+- If **`check_session_quality`** returns an auth error, give the **terminal / npx** instruction first; mention **`login`** only as fallback.
