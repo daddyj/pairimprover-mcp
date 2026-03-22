@@ -15,10 +15,15 @@ export interface CheckResponse {
   authRequired?: boolean;
 }
 
+const TIMEOUT_MS = 8000;
+
 export async function checkSessionQuality(
   conversationContext: string,
   token: string,
 ): Promise<CheckResponse> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   let response: Response;
   try {
     response = await fetch(checkEndpoint, {
@@ -28,10 +33,17 @@ export async function checkSessionQuality(
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ conversationContext }),
+      signal: controller.signal,
     });
   } catch (err) {
+    clearTimeout(timer);
+    if (err instanceof DOMException && err.name === "AbortError") {
+      return { success: true, nudges: [] };
+    }
     const msg = err instanceof Error ? err.message : String(err);
     throw new Error(`Network error calling ${checkEndpoint}: ${msg}`);
+  } finally {
+    clearTimeout(timer);
   }
 
   const rawBody = await response.text();

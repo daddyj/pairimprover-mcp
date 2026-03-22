@@ -1,10 +1,17 @@
 {
   "name": "pairimprover-mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "MCP server for in-chat AI coding quality nudges - pAIrImprover",
   "license": "ISC",
   "author": "Acun Guersoy",
   "homepage": "https://www.pairimprover.com/setup",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/daddyj/pairimprover-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/daddyj/pairimprover-mcp/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {

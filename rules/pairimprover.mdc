@@ -1,105 +1,14 @@
 ---
-description: pAIrImprover – health on new chat, terminal login (npx CLI), session quality checks via MCP
+description: pAIrImprover session quality checks
 alwaysApply: true
 ---
 
-# pAIrImprover - Session Quality Nudges
+## pAIrImprover
 
-## First response (new chat only — once per thread)
+**First reply of a new chat:** Call `health`. If not authenticated, tell the user to run `npx -y pairimprover-cli login --github` in a terminal (tokens stay out of chat). If authenticated, end your reply with: pAIrImprover quality checks active.
 
-On your **first reply** in a **new chat** (not on follow-ups in the same thread):
+**After every reply where you wrote or changed code:** Call `check_session_quality` with a 1-2 sentence summary of what you just implemented and how the developer responded (or that they haven't responded yet). Do this before or at the start of your next reply.
 
-1. Call the **`health`** tool from the pAIrImprover MCP server.
-   - This call is **local only** (reads saved config on disk). It does **not** hit the internet or use API quota.
-2. **If authenticated** (health says you are logged in / token present):
-   - Answer the user’s question as usual.
-   - End your reply with this line (visible without scrolling if the reply is short; otherwise at the end):
-     > pAIrImprover quality checks active.
-3. **If not authenticated**:
-   - Answer the user’s question as usual.
-   - Add a **short** setup note (1–3 sentences): in-chat checks need a one-time sign-in. **Do not ask them to paste a JWT into this chat** (tokens can be logged in chat history). Tell them to open a **terminal** and run:
+**If `check_session_quality` returns text:** Weave it into your reply as a natural one-liner. Do not announce its source.
 
-     `npx -y pairimprover-cli login --github`
-
-     That opens GitHub, then writes credentials to the same config the MCP server uses. After it succeeds, they can **start a new chat** or ask you to run **`health`** again.
-
-   - **Do not** use the line “quality checks active” until **`health`** shows authenticated.
-
-If pAIrImprover MCP tools are **not available** (no `health` tool), skip all of the above for this chat.
-
-## After terminal login (same thread)
-
-If the user says they finished **`npx -y pairimprover-cli login --github`** (or similar), call **`health`** again to confirm, then acknowledge. This overrides the “first reply only” restriction for **`health`** in this case.
-
-## When to Check
-
-Call `check_session_quality` when you observe **any** of the signals below. **Important:** the developer may “accept” work **implicitly** by moving on (next feature, next topic) without saying “looks good” — Cursor acceptance of diffs is **not** visible as chat text, so infer from **conversation pattern**, not only exact phrases.
-
-### A. Explicit quick-approval language
-
-Phrases like: looks good, perfect, yes, let’s continue, ok, okay, great, nice, thanks, lgtm, ship it, go ahead, works, **ok works**, **sounds good** — especially when **not** paired with a question about the change.
-
-### B. Feature handoff without review (high priority)
-
-- Your **last reply** (or last two) included **substantial implementation**: new/updated screens, multiple files, tests, or a long “here’s what changed” summary.
-- The user’s **next message** starts a **new** task or topic (**next**, **next task**, **next topic**, **what’s next**, **now do X**, **create an account page**, etc.) **without** asking about edge cases, tests, errors, trade-offs, or reviewing what was just shipped.
-
-Treat that as **blind handoff**: call `check_session_quality` **before or while** answering the new request (summarize the handoff in `conversationContext`).
-
-### C. Large change, no discussion
-
-- A **large** code change or multi-step implementation (rough guide: **20+ lines** or **2+ meaningful files** in your output) and the session did **not** discuss tests, failure modes, or alternatives for that chunk.
-
-### D. Same feature churn
-
-- Developer and AI **5+ exchanges** on the same feature without stepping back.
-
-### E. Vibe-coding shortcuts
-
-- “Just do it”, “make it work”, “don’t worry about tests”, “skip tests for now”, etc.
-
-### F. Cadence backstop (if nothing above fired)
-
-- **6+** user+assistant turns in this thread that involved **implementation** (code, refactors, tests), and you have **not** called `check_session_quality` in the last **4** user messages — call it **once** unless **When to Skip** applies.
-
-## When to Skip
-
-Do NOT call `check_session_quality` when:
-
-- Developer is **actively questioning** (“why this approach?”, “what about X?”, “is there a library?”).
-- Developer **explicitly** discusses tests, errors, or trade-offs for the change at hand.
-- Developer **pushes back** or proposes their own approach.
-- The task is a **trivial** change (typo, rename, single-line fix) **and** no handoff pattern applies.
-- You called `check_session_quality` in the **last 3** user messages **unless** **B (feature handoff)** applies after a **substantial** implementation — handoff overrides the cooldown.
-
-## How to Build the Summary
-
-When calling `check_session_quality`, pass a `conversationContext` string that includes:
-
-1. **The specific last action**: what was implemented and what the user did next
-2. **Framework/language**
-3. **The behavioral signal**: e.g. “User moved to next feature without reviewing DummyJSON auth swap + tests; no discussion of edge cases.”
-
-Good example:
-
-> "RN app. Assistant replaced ReqRes with DummyJSON auth, updated tests. User said 'ok great, next task: refactor list to detail screen' with no review questions."
-
-Bad example:
-
-> "We've been working on the app."
-
-## How to Present Results
-
-When the tool returns text:
-
-1. **Weave it naturally into your reply** - do not create a separate section or announce its source
-2. **One suggestion per response** - if multiple are returned, pick the most relevant
-3. **Keep the developer in control** - every suggestion should feel optional, not mandatory
-
-If nothing is returned, continue normally. Do not mention the check.
-
-## Authentication
-
-- **Preferred:** Terminal — `npx -y pairimprover-cli login --github` (tokens stay out of AI chat). Same config file as MCP (`~/.pairimprover/config.json`).
-- **Fallback (avoid when possible):** If the developer **pastes a token** in chat, you may call **`login`** with it. Remind them that chat logs may retain secrets and they should rotate the token if the thread is shared.
-- If **`check_session_quality`** returns an auth error, give the **terminal / npx** instruction first; mention **`login`** only as fallback.
+**If it returns empty or fails:** Continue normally. Do not mention it.

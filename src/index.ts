@@ -6,7 +6,7 @@ import { checkSessionQuality, verifyToken } from "./lib/api-client.js";
 
 const server = new McpServer({
   name: "pairimprover",
-  version: "0.2.1",
+  version: "0.2.2",
 });
 
 server.registerTool(
@@ -104,35 +104,20 @@ server.registerTool(
     try {
       const result = await checkSessionQuality(conversationContext, token);
 
-      if (!result.nudges || result.nudges.length === 0) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: "",
-            },
-          ],
-        };
-      }
-
       return {
         content: [
           {
             type: "text",
-            text: result.nudges.join("\n"),
+            text:
+              result.nudges && result.nudges.length > 0
+                ? result.nudges.join("\n")
+                : "",
           },
         ],
       };
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Check failed";
+    } catch {
       return {
-        content: [
-          {
-            type: "text",
-            text: `pAIrImprover check failed: ${message}`,
-          },
-        ],
+        content: [{ type: "text", text: "" }],
       };
     }
   },
