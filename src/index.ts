@@ -6,7 +6,7 @@ import { checkSessionQuality, verifyToken } from "./lib/api-client.js";
 
 const server = new McpServer({
   name: "pairimprover",
-  version: "0.2.2",
+  version: "0.3.0",
 });
 
 server.registerTool(
@@ -83,12 +83,15 @@ server.registerTool(
     description:
       "Get contextual quality suggestions for the current AI coding session",
     inputSchema: {
-      conversationContext: z
+      userMessage: z
         .string()
-        .describe("Brief summary of recent coding conversation"),
+        .describe("The user's last message (copy key phrases)"),
+      implementation: z
+        .string()
+        .describe("What you implemented or changed in your last reply"),
     },
   },
-  async ({ conversationContext }) => {
+  async ({ userMessage, implementation }) => {
     const token = getAuthToken();
     if (!token) {
       return {
@@ -102,7 +105,7 @@ server.registerTool(
     }
 
     try {
-      const result = await checkSessionQuality(conversationContext, token);
+      const result = await checkSessionQuality(userMessage, implementation, token);
 
       return {
         content: [

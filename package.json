@@ -1,6 +1,6 @@
 {
   "name": "pairimprover-mcp",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "MCP server for in-chat AI coding quality nudges - pAIrImprover",
   "license": "ISC",
   "author": "Acun Guersoy",

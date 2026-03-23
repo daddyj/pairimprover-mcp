@@ -18,7 +18,8 @@ export interface CheckResponse {
 const TIMEOUT_MS = 8000;
 
 export async function checkSessionQuality(
-  conversationContext: string,
+  userMessage: string,
+  implementation: string,
   token: string,
 ): Promise<CheckResponse> {
   const controller = new AbortController();
@@ -32,7 +33,7 @@ export async function checkSessionQuality(
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ conversationContext }),
+      body: JSON.stringify({ userMessage, implementation }),
       signal: controller.signal,
     });
   } catch (err) {
