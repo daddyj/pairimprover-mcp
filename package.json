@@ -21,7 +21,8 @@
     "dist",
     "bin",
     "skills",
-    "rules"
+    "rules",
+    "claude"
   ],
   "scripts": {
     "build": "tsc",

@@ -33,6 +33,7 @@ Behavior and wording of checks live on the server; this package is a thin client
 
 - `rules/` — Cursor rule template (`pairimprover.mdc`)
 - `skills/` — SKILL variant for other MCP-capable tools
+- `claude/` — `CLAUDE.md` for [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) (copy to project root; add MCP via `claude mcp add` — see [setup](https://www.pairimprover.com/setup))
 - `dist/` — compiled server (published)
 
 ## License
